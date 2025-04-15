@@ -1,0 +1,39 @@
+name: "Create Release Branch, Build and Publish to GAR"
+
+on:
+  workflow_call:
+    inputs:
+      release_version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      build_version:
+        description: 'Build version (e.g., build-1)'
+        required: true
+        default: 'build-1'
+        type: string
+
+jobs:
+  create-release-branch:
+    name: "Create Release Branch"
+    runs-on: "ubuntu-latest"
+    environment: "development"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332" # actions/checkout@v4
+
+      # Configure Git Identity. Use bot identity
+      - name: "Configure Git"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Create branch from development
+      - name: "Create release branch"
+        run: |
+          git fetch origin
+          git checkout development
+          git pull origin development
+          git checkout -b release/${{ github.event.inputs.release_version }}
+          git push origin release/${{ github.event.inputs.release_version }}
